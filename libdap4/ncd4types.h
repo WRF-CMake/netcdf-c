@@ -273,6 +273,7 @@ struct NCD4curl {
 	long  httpcode;
 	char  errorbuf[CURL_ERROR_SIZE]; /* CURLOPT_ERRORBUFFER*/
     } errdata;
+    long buffersize; /* read buffer size */    
 };
 
 /**************************************************/

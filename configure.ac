@@ -688,6 +688,7 @@ AC_C_CONST
 # CURLOPT_KEYPASSWD is not defined until curl version 7.16.4
 # CURLINFO_RESPONSE_CODE is not defined until curl version 7.10.7
 # CURLOPT_CHUNK_BGN_FUNCTION is not defined until curl version 7.21.0
+# CURL_MAX_READ_SIZE is not defined until 7.59
 
 # Save/restore CFLAGS
 SAVECFLAGS="$CFLAGS"
@@ -735,6 +736,17 @@ AC_MSG_CHECKING([whether CURLINFO_RESPONSE_CODE is defined])
 AC_MSG_RESULT([${haveresponsecode}])
 if test $haveresponsecode = yes; then
   AC_DEFINE([HAVE_CURLINFO_RESPONSE_CODE],[1],[Is CURLINFO_RESPONSE_CODE defined])
+fi
+
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+[#include "curl/curl.h"],
+[[int x = CURLOPT_BUFFERSIZE;]])],
+                   [haveresponsecode=yes],
+                   [haveresponsecode=no])
+AC_MSG_CHECKING([whether CURLOPT_BUFFERSIZE is defined])
+AC_MSG_RESULT([${haveresponsecode}])
+if test $haveresponsecode = yes; then
+  AC_DEFINE([HAVE_CURLOPT_BUFFERSIZE],[1],[Is CURLOPT_BUFFERSIZE defined])
 fi
 
 CFLAGS="$SAVECFLAGS"

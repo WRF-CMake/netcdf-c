@@ -12,8 +12,10 @@
 /* Mnemonic */
 #define OPTARG void*
 
+/* Define some .rc file entries of interest*/
 #define NETRCFILETAG "HTTP.NETRC"
 
+/* Check return value */
 #define CHECK(state,flag,value) {if(check(state,flag,(void*)value) != OC_NOERR) {goto done;}}
 
 static OCerror
@@ -153,6 +155,12 @@ ocset_curlflag(OCstate* state, int flag)
     }
     break;
 
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+    case CURLOPT_BUFFERSIZE:
+	CHECK(state, CURLOPT_BUFFERSIZE, (OPTARG)state->curlbuffersize);
+	break;
+#endif
+
     default: {
 	struct OCCURLFLAG* f = occurlflagbyflag(flag);
 	if(f != NULL)
@@ -194,6 +202,12 @@ ocset_flags_perlink(OCstate* state)
     if(stat == OC_NOERR) stat = ocset_curlflag(state, CURLOPT_FOLLOWLOCATION);
     if(stat == OC_NOERR) stat = ocset_curlflag(state, CURLOPT_MAXREDIRS);
     if(stat == OC_NOERR) stat = ocset_curlflag(state, CURLOPT_ERRORBUFFER);
+
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+    /* Optional */
+    if(stat == OC_NOERR && state->curlbuffersize > 0)
+	stat = ocset_curlflag(state, CURLOPT_BUFFERSIZE);
+#endif
     return stat;
 }
 

@@ -17,7 +17,7 @@
 #define CURLOPT_KEYPASSWD CURLOPT_SSLKEYPASSWD
 #endif
 
-#define NETRCFILETAG "HTTP.NETRC"
+#define D4BUFFERSIZE "HTTP.READ.BUFFERSIZE"
 
 #define CHECK(state,flag,value) {if(check(state,flag,(void*)value) != NC_NOERR) {goto done;}}
 
@@ -140,6 +140,11 @@ set_curlflag(NCD4INFO* state, int flag)
     }
     break;
 
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+    case CURLOPT_BUFFERSIZE:
+	CHECK(state, CURLOPT_BUFFERSIZE, (OPTARG)state->curl->buffersize);
+	break;
+#endif
     default:
         nclog(NCLOGWARN,"Attempt to update unexpected curl flag: %d",flag);
 	break;
@@ -177,6 +182,12 @@ NCD4_set_flags_perlink(NCD4INFO* state)
     if(ret == NC_NOERR) ret = set_curlflag(state, CURLOPT_MAXREDIRS);
     if(ret == NC_NOERR) ret = set_curlflag(state, CURLOPT_ERRORBUFFER);
 
+    /* Optional */
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+    if(ret == NC_NOERR && state->curl->buffersize > 0)
+        ret = set_curlflag(state, CURLOPT_BUFFERSIZE);
+#endif
+	
     /* Set the CURL. options */
     if(ret == NC_NOERR) ret = set_curl_options(state);
     return THROW(ret);
@@ -268,6 +279,27 @@ NCD4_curl_protocols(NCD4INFO* state)
 #endif
 }
 
+/*
+    Extract state values from .rc file
+*/
+ncerror
+NCD4_get_rcproperties(NCD4INFO* state)
+{
+    ncerror err = NC_NOERR;
+    char* option = NULL;
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+    option = NC_rclookup(D4BUFFERSIZE,state->uri->uri);
+    if(option != NULL && strlen(option) != 0) {
+	long bufsize;
+	if(strcasecmp(option,"max")==0) 
+	    bufsize = CURL_MAX_READ_SIZE;
+	else if(sscanf(option,"%ld",&bufsize) != 1 || bufsize <= 0)
+	    fprintf(stderr,"Illegal %s size\n",D4BUFFERSIZE);
+        state->curl->buffersize = bufsize;
+    }
+#endif
+    return err;
+}
 
 #if 0
 /*

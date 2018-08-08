@@ -36,6 +36,8 @@
 #define CLBRACE '{'
 #define CRBRACE '}'
 
+#define OCBUFFERSIZE "HTTP.READ.BUFFERSIZE"
+
 /*Forward*/
 static OCerror ocextractddsinmemory(OCstate*,OCtree*,int);
 static OCerror ocextractddsinfile(OCstate*,OCtree*,int);
@@ -45,6 +47,7 @@ static int dataError(XXDR* xdrs, OCstate*);
 static void ocremovefile(const char* path);
 
 static OCerror ocset_curlproperties(OCstate*);
+static OCerror ocget_rcproperties(OCstate*);
 
 extern OCnode* makeunlimiteddimension(void);
 
@@ -75,6 +78,9 @@ ocinternalinitialize(void)
 
     /* Compute some xdr related flags */
     xxdr_init();
+
+    /* Make sure that the rc file has been loaded */
+    (void)NC_rcload();
 
     return OCTHROW(stat);
 }
@@ -113,7 +119,11 @@ ocopen(OCstate** statep, const char* url)
     /* Initialize auth info from rc file */
     stat = NC_authsetup(&state->auth, state->uri);
 
-    /* capture curl properties for this link from rc file1*/
+    /* Initialize misc info from rc file */
+    stat = ocget_rcproperties(state);
+
+    /* Apply curl properties for this link;
+       assumes state has been initialized */
     stat = ocset_curlproperties(state);
     if(stat != OC_NOERR) goto fail;
 
@@ -491,7 +501,30 @@ ocupdatelastmodifieddata(OCstate* state)
 }
 
 /*
-    Set curl properties for link based on rc files etc.
+    Extract state values from .rc file
+*/
+static OCerror
+ocget_rcproperties(OCstate* state)
+{
+    OCerror ocerr = OC_NOERR;
+    char* option = NULL;
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+    option = NC_rclookup(OCBUFFERSIZE,state->uri->uri);
+    if(option != NULL && strlen(option) != 0) {
+	long bufsize;
+	if(strcasecmp(option,"max")==0) 
+	    bufsize = CURL_MAX_READ_SIZE;
+	else if(sscanf(option,"%ld",&bufsize) != 1 || bufsize <= 0)
+            fprintf(stderr,"Illegal %s size\n",OCBUFFERSIZE);
+	state->curlbuffersize = bufsize;
+    }
+#endif
+    return ocerr;
+}
+
+
+/*
+    Set curl properties for link based on fields in the state.
 */
 static OCerror
 ocset_curlproperties(OCstate* state)

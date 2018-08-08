@@ -176,6 +176,7 @@ struct OCstate {
     NCauth auth; /* curl auth data */
     long ddslastmodified;
     long datalastmodified;
+    long curlbuffersize;
 };
 
 /*! OCtree holds extra state info about trees */

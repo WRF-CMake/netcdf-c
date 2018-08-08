@@ -70,6 +70,9 @@ NCD4_open(const char * path, int mode,
 	goto done;
     NCD4_curl_protocols(d4info);
 
+    /* Load misc rc properties */
+    NCD4_get_rcproperties(d4info);
+
     if(!constrainable(d4info->uri))
 	SETFLAG(d4info->controls.flags,NCF_UNCONSTRAINABLE);
 
