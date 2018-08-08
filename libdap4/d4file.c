@@ -70,9 +70,6 @@ NCD4_open(const char * path, int mode,
 	goto done;
     NCD4_curl_protocols(d4info);
 
-    /* Load misc rc properties */
-    NCD4_get_rcproperties(d4info);
-
     if(!constrainable(d4info->uri))
 	SETFLAG(d4info->controls.flags,NCF_UNCONSTRAINABLE);
 
@@ -149,6 +146,8 @@ NCD4_open(const char * path, int mode,
 	/* create the connection */
         if((ret=NCD4_curlopen(&curl))!= NC_NOERR) goto done;
 	d4info->curl->curl = curl;
+        /* Load misc rc properties */
+        NCD4_get_rcproperties(d4info);
         if((ret=set_curl_properties(d4info))!= NC_NOERR) goto done;	
         /* Set the one-time curl flags */
         if((ret=NCD4_set_flags_perlink(d4info))!= NC_NOERR) goto done;
