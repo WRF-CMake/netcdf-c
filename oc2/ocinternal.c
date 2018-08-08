@@ -38,6 +38,12 @@
 
 #define OCBUFFERSIZE "HTTP.READ.BUFFERSIZE"
 
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+#ifndef CURL_MAX_READ_SIZE
+#define CURL_MAX_READ_SIZE  (512*1024)
+#endif
+#endif
+
 /*Forward*/
 static OCerror ocextractddsinmemory(OCstate*,OCtree*,int);
 static OCerror ocextractddsinfile(OCstate*,OCtree*,int);

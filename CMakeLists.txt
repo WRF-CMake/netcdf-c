@@ -800,6 +800,12 @@ IF(ENABLE_DAP)
   #include <curl/curl.h>
   int main() {int x = CURLOPT_KEYPASSWD;}" HAVE_CURLOPT_KEYPASSWD)
 
+  # Check to see if CURLOPT_BUFFERSIZE is defined.
+  # It is present starting version 7.59
+  CHECK_C_SOURCE_COMPILES("
+  #include <curl/curl.h>
+  int main() {int x = CURLOPT_BUFFERSIZE;}" HAVE_CURLOPT_BUFFERSIZE)
+
   # Check to see if CURLINFO_RESPONSE_CODE is defined.
   # It showed up in curl 7.10.7.
   CHECK_C_SOURCE_COMPILES("

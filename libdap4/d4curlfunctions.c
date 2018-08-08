@@ -19,6 +19,12 @@
 
 #define D4BUFFERSIZE "HTTP.READ.BUFFERSIZE"
 
+#ifdef HAVE_CURLOPT_BUFFERSIZE
+#ifndef CURL_MAX_READ_SIZE
+#define CURL_MAX_READ_SIZE  (512*1024)
+#endif
+#endif
+
 #define CHECK(state,flag,value) {if(check(state,flag,(void*)value) != NC_NOERR) {goto done;}}
 
 /* forward */
